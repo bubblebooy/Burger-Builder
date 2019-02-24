@@ -1,0 +1,5 @@
+@import "../Checkout/ContactData/ContactData.scss";
+
+.Auth {
+  @extend .ContactData !optional
+}
