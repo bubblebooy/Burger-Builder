@@ -8,7 +8,7 @@ const toolbar = (props) => (
     <button className='MenuButton' onClick={props.menuClicked}>Menu</button>
     <Logo/>
     <nav className='DesktopOnly'>
-      <NavigationItems/>
+      <NavigationItems isAuthenticated={props.isAuthenticated}/>
     </nav>
   </header>
 );

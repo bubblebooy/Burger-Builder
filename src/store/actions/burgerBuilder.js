@@ -11,6 +11,7 @@ export const initIngredients = () => {
     fetch('https://react-my-burger-7c16f.firebaseio.com/ingredients.json')
     .then( response => response.json())
     .then( response => {
+      if (response.error) throw response.error;
       dispatch(setIngredients(response))
     })
     .catch(error => {

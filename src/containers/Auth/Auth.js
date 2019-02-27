@@ -1,9 +1,16 @@
 import React, { Component } from 'react';
+import { Redirect } from 'react-router-dom'
+import { connect } from 'react-redux'
+
 import Input from '../../components/UI/Input/Input'
 import './Auth.scss'
+import Spinner from '../../components/UI/Spinner/Spinner'
+import * as actions from '../../store/actions/'
+
 
 class Auth extends Component {
   state = {
+    isSignup: true,
     controls: {
       email: {
         elementType: 'input',
@@ -64,8 +71,17 @@ class Auth extends Component {
     return isValid;
   }
 
+  submitHandler = (event) => {
+    event.preventDefault();
+    this.props.onAuth(this.state.controls.email.value, this.state.controls.password.value, this.state.isSignup)
+  }
+
+  switchAuthModeHandler = () => {
+    this.setState(prevState => ({isSignup: !prevState.isSignup}))
+  }
+
   render () {
-    const formElementsArray = [];
+    let formElementsArray = [];
     for (let key in this.state.controls) {
       let config = this.state.controls[key]
       formElementsArray.push(
@@ -78,16 +94,53 @@ class Auth extends Component {
           changed={(e) => this.inputChangedHandler(e,key)}/>
       );
     }
-    console.log(formElementsArray);
+
+    if (this.props.loading) {
+      formElementsArray = <Spinner />
+    }
+
+    let errorMessage = null;
+    if (this.props.error) {
+      errorMessage = (
+        <p className='error'>{this.props.error.message}</p>
+      )
+    }
+
+    let authRedirect = null;
+    if (this.props.isAuthenticated) {
+        authRedirect = <Redirect to={this.props.isBuilding ? '/checkout' : '/'} />
+    }
+
     return (
       <div className="Auth">
-        <form>
+        {authRedirect}
+        <form onSubmit={this.submitHandler}>
           {formElementsArray}
-          <button className="Button Success"> SUBMIT </button>
+          {errorMessage}
+          <button className="Button Success"> {this.state.isSignup ? 'Create Account' : 'Sign-in' } </button>
         </form>
+          <button
+            className="Button Danger Small"
+            onClick={this.switchAuthModeHandler}>
+            {this.state.isSignup ? 'Sign-in' : 'Create Account'}
+          </button>
       </div>
     );
   }
 }
 
-export default Auth;
+const mapStateToProps = state => {
+  return {
+    loading: state.auth.loading,
+    error: state.auth.error,
+    isAuthenticated: state.auth.token !== null,
+    isBuilding: state.burgerBuilder.building,
+  };
+}
+const mapDispatchToProps = dispatch => {
+  return {
+    onAuth: (email, password, signup) => dispatch(actions.auth(email, password, signup))
+  }
+}
+
+export default connect(mapStateToProps , mapDispatchToProps)(Auth);

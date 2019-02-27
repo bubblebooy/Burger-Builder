@@ -13,11 +13,14 @@ const purchaseBurgerFail = (error) => {
     error: error,
   }
 };
+
 const purchaseBurgerStart = () => ({type: actionTypes.PURCHASE_BURGER_START})
-export const purchaseBurger = (orderData) => {
+
+export const purchaseBurger = ( orderData, token ) => {
   return dispatch => {
     dispatch(purchaseBurgerStart())
-    fetch('https://react-my-burger-7c16f.firebaseio.com/order.json',{
+    const queryParams = `?auth=${token}`
+    fetch(`https://react-my-burger-7c16f.firebaseio.com/order.json${queryParams}`,{
       method: "POST",
       headers: {
             "Content-Type": "application/json",
@@ -26,6 +29,7 @@ export const purchaseBurger = (orderData) => {
     })
     .then( response => response.json())
     .then( response => {
+      if (response.error) throw response.error
       dispatch(purchaseBurgerSuccess(response.name,orderData))
     })
     .catch(error => {
@@ -38,18 +42,22 @@ const fetchOrdersSuccess = (orders) => ({
     type: actionTypes.FETCH_ORDERS_SUCCESS,
     orders: orders,
 });
+
 const fetchOrdersFail = (error) => ({
     type: actionTypes.FETCH_ORDERS_FAIL,
     error: error,
 });
+
 const featchOrdersStart = () => ({type: actionTypes.FETCH_ORDERS_START})
-export const fetchOrders = () => {
+
+export const fetchOrders = (token , userId) => {
   return dispatch => {
     dispatch(featchOrdersStart())
-    fetch('https://react-my-burger-7c16f.firebaseio.com/order.json')
+    const queryParams = `?auth=${token}&orderBy="userId"&equalTo="${userId}"`
+    fetch(`https://react-my-burger-7c16f.firebaseio.com/order.json${queryParams}`)
     .then( response => response.json())
     .then( response => {
-
+      if (response.error) throw response.error;
       let orders = Object.entries(response)
         .map((order) => (
           {
